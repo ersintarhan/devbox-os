@@ -58,6 +58,12 @@ modules:
         - gstreamer1-plugin-openh264
         - mozilla-openh264
 
+        # AMD GPU support (Mesa/Vulkan/OpenCL)
+        - mesa-vulkan-drivers
+        - mesa-va-drivers
+        - rocm-opencl
+        - vulkan-tools
+
         # Fonts
         - fira-code-fonts
         - jetbrains-mono-fonts

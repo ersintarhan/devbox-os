@@ -48,6 +48,12 @@ DevBox OS is a custom Fedora Silverblue image designed for developers who embrac
 - Full codec support (H.264, H.265, etc.)
 - RPM Fusion repositories
 
+**AMD GPU Support:**
+- Mesa Vulkan drivers for gaming/graphics
+- ROCm OpenCL for compute workloads
+- VA-API hardware video acceleration
+- vulkan-tools for debugging
+
 **Fonts:**
 - Fira Code, JetBrains Mono, Noto Emoji
 
