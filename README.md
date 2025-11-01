@@ -26,6 +26,7 @@ DevBox OS is a custom Fedora Silverblue image designed for developers who embrac
 - Shells: `fish`, `zsh`
 - Editor: `neovim`
 - Multiplexer: `tmux`
+- File Manager: `nautilus` (with extension development support)
 - Containers: `distrobox`, `podman-compose`
 
 **Development (via distrobox):**

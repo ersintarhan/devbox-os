@@ -33,6 +33,11 @@ modules:
         - neovim
         - tmux
 
+        # GNOME Essentials
+        - nautilus # File manager
+        - python3-nautilus # Python bindings for Nautilus extensions
+        - nautilus-devel # Development headers for Nautilus extensions
+
         # Container tools
         - podman-compose
 
