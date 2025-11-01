@@ -1,43 +1,233 @@
-# BlueBuild Template &nbsp; [![bluebuild build badge](https://github.com/blue-build/template/actions/workflows/build.yml/badge.svg)](https://github.com/blue-build/template/actions/workflows/build.yml)
+# DevBox OS 🐳
 
-See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
+[![bluebuild build badge](https://github.com/ersintarhan/devbox-os/actions/workflows/build.yml/badge.svg)](https://github.com/ersintarhan/devbox-os/actions/workflows/build.yml)
 
-After setup, it is recommended you update this README to describe your custom image.
+**A container-first development environment built on Fedora Silverblue**
 
-## Installation
+DevBox OS is a custom Fedora Silverblue image designed for developers who embrace the container-first philosophy. Built with [BlueBuild](https://blue-build.org/), it provides a minimal, immutable base system while leveraging distrobox for development tools.
 
-> [!WARNING]  
-> [This is an experimental feature](https://www.fedoraproject.org/wiki/Changes/OstreeNativeContainerStable), try at your own discretion.
+## 🎯 Philosophy
 
-To rebase an existing atomic Fedora installation to the latest build:
+- **Immutable Base**: Keep the base system minimal and clean
+- **Container-First**: All development tools live in distrobox containers
+- **Declarative**: Everything is defined in `recipe.yml`
+- **Secure by Default**: Image signing with cosign, minimal attack surface
 
-- First rebase to the unsigned image, to get the proper signing keys and policies installed:
-  ```
-  rpm-ostree rebase ostree-unverified-registry:ghcr.io/blue-build/template:latest
-  ```
-- Reboot to complete the rebase:
-  ```
-  systemctl reboot
-  ```
-- Then rebase to the signed image, like so:
-  ```
-  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/blue-build/template:latest
-  ```
-- Reboot again to complete the installation
-  ```
-  systemctl reboot
-  ```
+## ✨ Features
 
-The `latest` tag will automatically point to the latest build. That build will still always use the Fedora version specified in `recipe.yml`, so you won't get accidentally updated to the next major version.
+### 🖥️ Base System
+- **Fedora Silverblue 43** with GNOME desktop
+- Minimal package layering for performance
+- Automatic daily builds and updates
+- Signed images with cosign
 
-## ISO
+### 📦 Included Tools
+**CLI Essentials:**
+- Modern replacements: `eza`, `bat`, `ripgrep`, `fd`, `zoxide`
+- Editors: `neovim`
+- Multiplexer: `tmux`
+- Monitoring: `btop`, `htop`
+- Shells: `fish`, `zsh`
 
-If build on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/learn/universal-blue/#fresh-install-from-an-iso). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
+**Development:**
+- `distrobox` & `podman-compose`
+- `gh` (GitHub CLI)
+- `git-delta` (better git diffs)
 
-## Verification
+**Virtualization:**
+- KVM/QEMU with `libvirt`
+- `virt-install` for VM management
+- Auto-configured libvirt service
 
-These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
+**Btrfs Snapshots:**
+- `snapper` for /home snapshots
+- Automatic snapshot management
+- Easy rollback capabilities
+
+**Multimedia:**
+- Full codec support (H.264, H.265, etc.)
+- RPM Fusion repositories
+
+**Fonts:**
+- Fira Code, JetBrains Mono, Noto Emoji
+
+### 📱 Default Flatpaks
+**Browsers:**
+- Brave
+- Firefox
+- Zen Browser
+
+**Development:**
+- VS Code
+
+**Communication:**
+- Telegram
+- Thunderbird
+
+**Multimedia:**
+- VLC
+- Spotify
+
+**Utilities:**
+- Flatseal (Flatpak permissions)
+- Warehouse (Flatpak manager)
+- GNOME Boxes (virtual machines)
+- Extension Manager (GNOME extensions)
+
+### 🐳 Distrobox Setup
+Pre-configured distrobox environments:
+- **dev-fedora**: Fedora Toolbox with common dev tools
+- **dev-ubuntu**: Ubuntu-based development environment
+
+Create with:
+```bash
+distrobox-assemble create
+```
+
+## 🚀 Installation
+
+### Fresh Install
+
+1. **Rebase to unsigned image** (first time):
+   ```bash
+   rpm-ostree rebase ostree-unverified-registry:ghcr.io/ersintarhan/devbox-os:latest
+   sudo systemctl reboot
+   ```
+
+2. **Rebase to signed image** (after reboot):
+   ```bash
+   rpm-ostree rebase ostree-image-signed:docker://ghcr.io/ersintarhan/devbox-os:latest
+   sudo systemctl reboot
+   ```
+
+### Post-Install Setup
+
+1. **Add user to libvirt group** (for KVM/VMs):
+   ```bash
+   sudo usermod -aG libvirt $USER
+   # Logout and login for group changes to take effect
+   ```
+
+2. **Create distrobox containers:**
+   ```bash
+   distrobox-assemble create
+   ```
+
+3. **Enter development environment:**
+   ```bash
+   distrobox-enter dev-fedora
+   ```
+
+4. **Install development tools in container:**
+   ```bash
+   # Inside distrobox
+   curl https://get.volta.sh | bash
+   volta install node@22
+
+   curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
+   ```
+
+5. **Test KVM/virtualization:**
+   ```bash
+   virsh list --all
+   # Or use GNOME Boxes GUI
+   ```
+
+6. **Enable automatic snapshots (optional):**
+   ```bash
+   sudo systemctl enable --now snapper-timeline.timer
+   sudo systemctl enable --now snapper-cleanup.timer
+   ```
+
+7. **Manage snapshots:**
+   ```bash
+   # List snapshots
+   sudo snapper -c home list
+
+   # Create manual snapshot
+   sudo snapper -c home create --description "Before update"
+
+   # Rollback to previous snapshot
+   sudo snapper -c home undochange 1..2
+   ```
+
+### Optional: Quake-Mode Terminal
+
+For a dropdown terminal (F12), install **ddterm** GNOME extension:
+- Open Extension Manager
+- Search for "ddterm"
+- Install and enable
+
+## 🔄 Updates
+
+DevBox OS automatically builds daily at 06:00 UTC. To update:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/blue-build/template
+rpm-ostree upgrade
+sudo systemctl reboot
 ```
+
+## 🛠️ Customization
+
+### Fork and Customize
+
+1. Fork this repository
+2. Edit `recipes/recipe.yml`
+3. Push changes - GitHub Actions will build automatically
+4. Rebase to your custom image:
+   ```bash
+   rpm-ostree rebase ostree-unverified-registry:ghcr.io/YOUR-USERNAME/devbox-os:latest
+   ```
+
+### Adding Packages
+
+Edit `recipes/recipe.yml`:
+
+```yaml
+- type: dnf
+  install:
+    packages:
+      - your-package-here
+```
+
+### Adding Flatpaks
+
+```yaml
+- type: default-flatpaks
+  configurations:
+    - scope: system
+      install:
+        - org.app.Name
+```
+
+## 📚 Documentation
+
+- [BlueBuild Documentation](https://blue-build.org/)
+- [Fedora Silverblue User Guide](https://docs.fedoraproject.org/en-US/fedora-silverblue/)
+- [Distrobox Documentation](https://distrobox.it/)
+
+## 🔐 Verification
+
+Images are signed with cosign. Verify with:
+
+```bash
+cosign verify --key cosign.pub ghcr.io/ersintarhan/devbox-os:latest
+```
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue or PR.
+
+## 📝 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Credits
+
+- Built with [BlueBuild](https://blue-build.org/)
+- Based on [Fedora Silverblue](https://fedoraproject.org/silverblue/)
+- Inspired by [Universal Blue](https://universal-blue.org/)
+
+---
+
+**DevBox OS** - Develop anywhere, deploy everywhere 🚀

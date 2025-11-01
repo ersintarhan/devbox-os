@@ -1,45 +1,137 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-# image will be published to ghcr.io/<user>/<name>
-name: template
-# description will be included in the image's metadata
-description: This is my personal OS image.
+# DevBox OS - A developer-focused Silverblue custom image
+name: devbox-os
+description: DevBox OS - Container-first development environment on Fedora Silverblue
 
-# the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/ublue-os/silverblue-main
-image-version: 42 # latest is also supported if you want new updates ASAP
+# Base image: Pure Fedora Silverblue (GNOME)
+base-image: quay.io/fedora-ostree-desktops/silverblue
+image-version: 43 # Fedora 43 - latest stable
 
-# module configuration, executed in order
-# you can include multiple instances of the same module
+# Module configuration, executed in order
 modules:
+  # Copy custom system files
   - type: files
     files:
       - source: system
-        destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
+        destination: /
 
+  # DNF packages - Keep minimal for immutable system
   - type: dnf
     repos:
-      copr:
-        - atim/starship
+      # RPM Fusion for multimedia codecs
+      - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+      - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
     install:
       packages:
-        - micro
-        - starship
+        # System management tools
+        - bootc
+        - cosign
+
+        # Essential CLI tools
+        - distrobox
+        - fish
+        - zsh
+        - neovim
+        - tmux
+        - btop
+        - htop
+
+        # Modern CLI replacements
+        - ripgrep
+        - fd-find
+        - bat
+        - eza
+        - zoxide
+
+        # Container tools
+        - podman-compose
+
+        # Development utilities
+        - git-delta
+        - gh # GitHub CLI
+
+        # Multimedia codecs (RPM Fusion)
+        - ffmpeg
+        - gstreamer1-plugins-bad-free
+        - gstreamer1-plugins-good
+        - gstreamer1-plugins-ugly-free
+        - gstreamer1-plugin-openh264
+        - mozilla-openh264
+
+        # Fonts
+        - fira-code-fonts
+        - jetbrains-mono-fonts
+        - google-noto-emoji-fonts
+
+        # Virtualization/KVM
+        - qemu-kvm
+        - libvirt
+        - virt-install
+        - libvirt-daemon-config-network
+        - libvirt-daemon-kvm
+
+        # Btrfs snapshot management
+        - snapper
+        - python3-dnf-plugin-snapper
+
     remove:
       packages:
-        # example: removing firefox (in favor of the flatpak)
-        # "firefox" is the main package, "firefox-langpacks" is a dependency
+        # Remove default apps (we'll use Flatpak versions)
         - firefox
-        - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+        - firefox-langpacks
+        - gnome-tour
+        - gnome-contacts
+        - gnome-maps
+        - totem # video player (vlc flatpak instead)
+        - rhythmbox # music player
 
+        # Remove toolbox (using distrobox instead)
+        - toolbox
+
+  # Default Flatpak applications
   - type: default-flatpaks
     configurations:
-      - notify: true # Send notification after install/uninstall is finished (true/false)
+      - notify: true
         scope: system
-        # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
+        install:
+          # Browsers
+          - com.brave.Browser
           - org.mozilla.firefox
-          - org.gnome.Loupe
-      - scope: user # Also add Flathub user repo, but no user packages
 
-  - type: signing # this sets up the proper policy & signing files for signed images to work fully
+          # Development
+          - com.visualstudio.code
+          - io.github.zen_browser.zen
+
+          # Communication
+          - org.telegram.desktop
+          - org.mozilla.Thunderbird
+
+          # Multimedia
+          - org.videolan.VLC
+          - com.spotify.Client
+
+          # Utilities
+          - com.github.tchx84.Flatseal
+          - io.github.flattool.Warehouse
+          - org.gnome.Boxes # virtual machines
+          - com.mattjakeman.ExtensionManager # GNOME extensions
+
+      - scope: user
+
+  # Enable systemd services
+  - type: systemd
+    system:
+      enabled:
+        - libvirtd.service
+
+  # Custom scripts for post-install configuration
+  - type: script
+    scripts:
+      - setup-distrobox.sh
+      - configure-shell.sh
+      - setup-kvm.sh
+      - setup-snapper.sh
+
+  # Image signing for security
+  - type: signing
