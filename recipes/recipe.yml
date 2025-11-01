@@ -25,42 +25,31 @@ modules:
       packages:
         # System management tools
         - bootc
-        - cosign
 
-        # Essential CLI tools
+        # Essential CLI tools (host shell environment)
         - distrobox
         - fish
         - zsh
         - neovim
         - tmux
-        - btop
-        - htop
-
-        # Modern CLI replacements
-        - ripgrep
-        - fd-find
-        - bat
-        - eza
-        - zoxide
 
         # Container tools
         - podman-compose
 
-        # Development utilities
-        - git-delta
-        - gh # GitHub CLI
-
         # Multimedia codecs (RPM Fusion)
         - ffmpeg
         - gstreamer1-plugins-bad-free
+        - gstreamer1-plugins-bad-freeworld # AAC, etc. (nonfree codecs)
         - gstreamer1-plugins-good
-        - gstreamer1-plugins-ugly-free
+        - gstreamer1-plugins-ugly # Full version (x264, etc.)
+        - gstreamer1-libav # FFmpeg backend for GStreamer
         - gstreamer1-plugin-openh264
         - mozilla-openh264
 
         # AMD GPU support (Mesa/Vulkan/OpenCL)
         - mesa-vulkan-drivers
-        - mesa-va-drivers
+        - mesa-va-drivers-freeworld # Better AMD hardware acceleration
+        - mesa-vdpau-drivers-freeworld # Video decode acceleration
         - rocm-opencl
         - vulkan-tools
 
@@ -97,8 +86,23 @@ modules:
         # Remove toolbox (using distrobox instead)
         - toolbox
 
-        # Remove ffmpeg-free (will install full ffmpeg from RPM Fusion)
+        # Remove ffmpeg-free libs (will install full ffmpeg from RPM Fusion)
         - ffmpeg-free
+        - libavcodec-free
+        - libavdevice-free
+        - libavfilter-free
+        - libavformat-free
+        - libavutil-free
+        - libpostproc-free
+        - libswresample-free
+        - libswscale-free
+
+        # Remove base mesa drivers (will install freeworld versions)
+        - mesa-va-drivers
+        - mesa-vdpau-drivers
+
+        # Remove gstreamer ugly-free (will install full version)
+        - gstreamer1-plugins-ugly-free
 
   # Default Flatpak applications
   - type: default-flatpaks

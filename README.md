@@ -22,17 +22,16 @@ DevBox OS is a custom Fedora Silverblue image designed for developers who embrac
 - Signed images with cosign
 
 ### 📦 Included Tools
-**CLI Essentials:**
-- Modern replacements: `eza`, `bat`, `ripgrep`, `fd`, `zoxide`
-- Editors: `neovim`
-- Multiplexer: `tmux`
-- Monitoring: `btop`, `htop`
+**Host System (Minimal):**
 - Shells: `fish`, `zsh`
+- Editor: `neovim`
+- Multiplexer: `tmux`
+- Containers: `distrobox`, `podman-compose`
 
-**Development:**
-- `distrobox` & `podman-compose`
-- `gh` (GitHub CLI)
-- `git-delta` (better git diffs)
+**Development (via distrobox):**
+- All development tools live in containers
+- Export binaries to host with `distrobox-export`
+- See distrobox setup below for details
 
 **Virtualization:**
 - KVM/QEMU with `libvirt`
@@ -45,13 +44,16 @@ DevBox OS is a custom Fedora Silverblue image designed for developers who embrac
 - Easy rollback capabilities
 
 **Multimedia:**
-- Full codec support (H.264, H.265, etc.)
+- Full codec support (H.264, H.265, AAC, x264, etc.)
+- FFmpeg with all codecs
+- GStreamer plugins (bad-freeworld, ugly, libav)
 - RPM Fusion repositories
 
 **AMD GPU Support:**
 - Mesa Vulkan drivers for gaming/graphics
 - ROCm OpenCL for compute workloads
-- VA-API hardware video acceleration
+- VA-API hardware video acceleration (freeworld drivers)
+- VDPAU video decode acceleration
 - vulkan-tools for debugging
 
 **Fonts:**
@@ -126,11 +128,32 @@ distrobox-assemble create
 
 4. **Install development tools in container:**
    ```bash
-   # Inside distrobox
+   # Inside distrobox (dev-fedora)
+
+   # Core development tools
+   sudo dnf install -y git gh
+
+   # Modern CLI tools
+   sudo dnf install -y bat ripgrep fd-find eza zoxide git-delta btop
+
+   # Export binaries to host (accessible everywhere)
+   distrobox-export --bin /usr/bin/git
+   distrobox-export --bin /usr/bin/gh
+   distrobox-export --bin /usr/bin/bat
+   distrobox-export --bin /usr/bin/rg  # ripgrep
+   distrobox-export --bin /usr/bin/fd
+   distrobox-export --bin /usr/bin/eza
+   distrobox-export --bin /usr/bin/zoxide
+   distrobox-export --bin /usr/bin/delta
+   distrobox-export --bin /usr/bin/btop
+
+   # Language runtimes (Node.js via Volta)
    curl https://get.volta.sh | bash
    volta install node@22
 
+   # .NET SDK
    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
+   curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0
    ```
 
 5. **Test KVM/virtualization:**
