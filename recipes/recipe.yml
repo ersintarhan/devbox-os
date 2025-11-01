@@ -76,6 +76,9 @@ modules:
         - libvirt-daemon-config-network
         - libvirt-daemon-kvm
 
+        # Thunderbolt/USB4 security
+        - bolt
+
         # Btrfs snapshot management
         - snapper
         - python3-dnf-plugin-snapper
@@ -93,6 +96,9 @@ modules:
 
         # Remove toolbox (using distrobox instead)
         - toolbox
+
+        # Remove ffmpeg-free (will install full ffmpeg from RPM Fusion)
+        - ffmpeg-free
 
   # Default Flatpak applications
   - type: default-flatpaks
